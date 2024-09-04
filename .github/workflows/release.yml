@@ -41,9 +41,9 @@ jobs:
           echo "$latest_tag"
 
           if [ "$latest_tag" == "${{ github.ref_name }}" ]; then
-            echo "BUILD_TAG=corepbx/user:${{ github.ref_name }},corepbx/user:latest" >> $GITHUB_ENV
+            echo "BUILD_TAG=corepbx/authenticate:${{ github.ref_name }},corepbx/authenticate:latest" >> $GITHUB_ENV
           else
-            echo "BUILD_TAG=corepbx/user:${{ github.ref_name }}" >> $GITHUB_ENV
+            echo "BUILD_TAG=corepbx/authenticate:${{ github.ref_name }}" >> $GITHUB_ENV
           fi
 
           echo "$GITHUB_ENV"
