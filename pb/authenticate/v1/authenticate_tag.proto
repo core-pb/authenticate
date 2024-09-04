@@ -1,0 +1,18 @@
+syntax = "proto3";
+package authenticate.v1;
+
+import "google/protobuf/struct.proto";
+import "tagger/tagger.proto";
+import "time/v1/time.proto";
+
+option go_package = "github.com/core-pb/authenticate/authenticate/v1;authenticate";
+
+message AuthenticateTag {
+    fixed64                authenticate_id = 1 [(tagger.tags) = "bun:\",pk,autoincrement\""];
+    fixed64                tag_id          = 2;
+    fixed64                source_id       = 3;
+    google.protobuf.Struct data            = 4 [(tagger.tags) = "bun:\"type:jsonb\""];
+
+    time.v1.Time created_at = 14 [(tagger.tags) = "bun:\"type:timestamptz\""];
+    time.v1.Time updated_at = 15 [(tagger.tags) = "bun:\"type:timestamptz\""];
+}

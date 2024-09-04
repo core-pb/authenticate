@@ -1,0 +1,43 @@
+syntax = "proto3";
+package authenticate.v1;
+
+import "google/protobuf/struct.proto";
+import "tagger/tagger.proto";
+import "time/v1/time.proto";
+import "authenticate/v1/authenticate_tag.proto";
+
+option go_package = "github.com/core-pb/authenticate/authenticate/v1;authenticate";
+
+message Authenticate {
+    fixed64                id      = 1 [(tagger.tags) = "bun:\",pk,autoincrement\""];
+    Type                   type    = 2;
+    bool                   disable = 3;
+    google.protobuf.Struct data    = 4 [(tagger.tags) = "bun:\"type:jsonb\""];
+    google.protobuf.Struct info    = 5 [(tagger.tags) = "bun:\"type:jsonb\""];
+
+    time.v1.Time created_at          = 14 [(tagger.tags) = "bun:\"type:timestamptz\""];
+    time.v1.Time updated_at          = 15 [(tagger.tags) = "bun:\"type:timestamptz\""];
+    optional time.v1.Time deleted_at = 16 [(tagger.tags) = "bun:\"type:timestamptz,soft_delete,nullzero\""];
+}
+
+message AuthenticateDetail {
+    Authenticate             authenticate     = 1;
+    repeated AuthenticateTag authenticate_tag = 2;
+}
+
+enum Type {
+    TYPE_UNSPECIFIED = 0;
+    TYPE_PASSWORD    = 1;
+    TYPE_OAUTH2      = 2;  // OAuth 2.0
+    TYPE_OPENID      = 3;  // OpenID
+    TYPE_OIDC        = 4;  // OpenID Connect
+    TYPE_CAS         = 5;
+    TYPE_SAML2       = 6;
+    TYPE_LDAP        = 7;
+    TYPE_SCIM        = 8;
+    TYPE_CAPTCHA     = 9;
+    TYPE_TOTP        = 10;
+    TYPE_EMAIL       = 11;
+    TYPE_SMS         = 12;
+    TYPE_CALL        = 13;
+}

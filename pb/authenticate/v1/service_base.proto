@@ -1,0 +1,78 @@
+syntax = "proto3";
+package authenticate.v1;
+
+import "query/v1/pagination.proto";
+import "query/v1/sort.proto";
+import "google/protobuf/struct.proto";
+import "authenticate/v1/authenticate.proto";
+
+option go_package = "github.com/core-pb/authenticate/authenticate/v1;authenticate";
+
+service Base {
+    rpc ListAuthenticate(ListAuthenticateRequest) returns (ListAuthenticateResponse) {}
+    rpc AddAuthenticate(AddAuthenticateRequest) returns (AddAuthenticateResponse) {}
+    rpc SetAuthenticate(SetAuthenticateRequest) returns (SetAuthenticateResponse) {}
+    rpc DeleteAuthenticate(DeleteAuthenticateRequest) returns (DeleteAuthenticateResponse) {}
+
+    rpc SetTag(SetTagRequest) returns (SetTagResponse) {}
+    rpc DeleteTag(DeleteTagRequest) returns (DeleteTagResponse) {}
+
+    rpc AvailableType(AvailableTypeRequest) returns (AvailableTypeResponse) {}
+}
+
+message ListAuthenticateRequest {
+    optional query.v1.Pagination pagination = 1;
+    repeated query.v1.Sort sort             = 2;
+    repeated fixed64       id               = 3;
+    repeated Type          type             = 4;
+    optional bool          disable          = 5;
+    optional google.protobuf.Struct data    = 6;
+    optional google.protobuf.Struct info    = 7;
+    repeated fixed64                tag_id  = 8;
+}
+message ListAuthenticateResponse {
+    repeated AuthenticateDetail data  = 1;
+    int64                       count = 2;
+}
+
+message AddAuthenticateRequest {
+    Type                   type    = 1;
+    bool                   disable = 2;
+    google.protobuf.Struct data    = 3;
+    google.protobuf.Struct info    = 4;
+}
+message AddAuthenticateResponse {
+    Authenticate data = 1;
+}
+
+message SetAuthenticateRequest {
+    fixed64       id                     = 1;
+    optional Type type                   = 2;
+    optional bool disable                = 3;
+    optional google.protobuf.Struct data = 4;
+    optional google.protobuf.Struct info = 5;
+}
+message SetAuthenticateResponse {}
+
+message DeleteAuthenticateRequest {
+    repeated fixed64 id = 1;
+}
+message DeleteAuthenticateResponse {}
+
+message SetTagRequest {
+    fixed64                authenticate_id = 1;
+    fixed64                tag_id          = 2;
+    google.protobuf.Struct data            = 3;
+}
+message SetTagResponse {}
+
+message DeleteTagRequest {
+    fixed64 authenticate_id = 1;
+    fixed64 tag_id          = 2;
+}
+message DeleteTagResponse {}
+
+message AvailableTypeRequest {}
+message AvailableTypeResponse {
+    repeated Type type = 1;
+}
