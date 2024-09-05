@@ -35,5 +35,3 @@ require (
 	golang.org/x/text v0.17.0 // indirect
 	mellium.im/sasl v0.3.1 // indirect
 )
-
-replace github.com/core-pb/tag => ../tag
