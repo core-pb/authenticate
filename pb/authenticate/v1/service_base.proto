@@ -14,6 +14,8 @@ service Base {
     rpc SetAuthenticate(SetAuthenticateRequest) returns (SetAuthenticateResponse) {}
     rpc DeleteAuthenticate(DeleteAuthenticateRequest) returns (DeleteAuthenticateResponse) {}
 
+    rpc Generate(GenerateRequest) returns (GenerateResponse) {}
+
     rpc SetTag(SetTagRequest) returns (SetTagResponse) {}
     rpc DeleteTag(DeleteTagRequest) returns (DeleteTagResponse) {}
 
@@ -75,4 +77,12 @@ message DeleteTagResponse {}
 message AvailableTypeRequest {}
 message AvailableTypeResponse {
     repeated Type type = 1;
+}
+
+message GenerateRequest {
+    fixed64                id   = 1;
+    google.protobuf.Struct data = 2;
+}
+message GenerateResponse {
+    google.protobuf.Struct data = 2;
 }

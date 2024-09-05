@@ -41,6 +41,8 @@ const (
 	BaseSetAuthenticateProcedure = "/authenticate.v1.Base/SetAuthenticate"
 	// BaseDeleteAuthenticateProcedure is the fully-qualified name of the Base's DeleteAuthenticate RPC.
 	BaseDeleteAuthenticateProcedure = "/authenticate.v1.Base/DeleteAuthenticate"
+	// BaseGenerateProcedure is the fully-qualified name of the Base's Generate RPC.
+	BaseGenerateProcedure = "/authenticate.v1.Base/Generate"
 	// BaseSetTagProcedure is the fully-qualified name of the Base's SetTag RPC.
 	BaseSetTagProcedure = "/authenticate.v1.Base/SetTag"
 	// BaseDeleteTagProcedure is the fully-qualified name of the Base's DeleteTag RPC.
@@ -56,6 +58,7 @@ var (
 	baseAddAuthenticateMethodDescriptor    = baseServiceDescriptor.Methods().ByName("AddAuthenticate")
 	baseSetAuthenticateMethodDescriptor    = baseServiceDescriptor.Methods().ByName("SetAuthenticate")
 	baseDeleteAuthenticateMethodDescriptor = baseServiceDescriptor.Methods().ByName("DeleteAuthenticate")
+	baseGenerateMethodDescriptor           = baseServiceDescriptor.Methods().ByName("Generate")
 	baseSetTagMethodDescriptor             = baseServiceDescriptor.Methods().ByName("SetTag")
 	baseDeleteTagMethodDescriptor          = baseServiceDescriptor.Methods().ByName("DeleteTag")
 	baseAvailableTypeMethodDescriptor      = baseServiceDescriptor.Methods().ByName("AvailableType")
@@ -67,6 +70,7 @@ type BaseClient interface {
 	AddAuthenticate(context.Context, *connect.Request[v1.AddAuthenticateRequest]) (*connect.Response[v1.AddAuthenticateResponse], error)
 	SetAuthenticate(context.Context, *connect.Request[v1.SetAuthenticateRequest]) (*connect.Response[v1.SetAuthenticateResponse], error)
 	DeleteAuthenticate(context.Context, *connect.Request[v1.DeleteAuthenticateRequest]) (*connect.Response[v1.DeleteAuthenticateResponse], error)
+	Generate(context.Context, *connect.Request[v1.GenerateRequest]) (*connect.Response[v1.GenerateResponse], error)
 	SetTag(context.Context, *connect.Request[v1.SetTagRequest]) (*connect.Response[v1.SetTagResponse], error)
 	DeleteTag(context.Context, *connect.Request[v1.DeleteTagRequest]) (*connect.Response[v1.DeleteTagResponse], error)
 	AvailableType(context.Context, *connect.Request[v1.AvailableTypeRequest]) (*connect.Response[v1.AvailableTypeResponse], error)
@@ -106,6 +110,12 @@ func NewBaseClient(httpClient connect.HTTPClient, baseURL string, opts ...connec
 			connect.WithSchema(baseDeleteAuthenticateMethodDescriptor),
 			connect.WithClientOptions(opts...),
 		),
+		generate: connect.NewClient[v1.GenerateRequest, v1.GenerateResponse](
+			httpClient,
+			baseURL+BaseGenerateProcedure,
+			connect.WithSchema(baseGenerateMethodDescriptor),
+			connect.WithClientOptions(opts...),
+		),
 		setTag: connect.NewClient[v1.SetTagRequest, v1.SetTagResponse](
 			httpClient,
 			baseURL+BaseSetTagProcedure,
@@ -133,6 +143,7 @@ type baseClient struct {
 	addAuthenticate    *connect.Client[v1.AddAuthenticateRequest, v1.AddAuthenticateResponse]
 	setAuthenticate    *connect.Client[v1.SetAuthenticateRequest, v1.SetAuthenticateResponse]
 	deleteAuthenticate *connect.Client[v1.DeleteAuthenticateRequest, v1.DeleteAuthenticateResponse]
+	generate           *connect.Client[v1.GenerateRequest, v1.GenerateResponse]
 	setTag             *connect.Client[v1.SetTagRequest, v1.SetTagResponse]
 	deleteTag          *connect.Client[v1.DeleteTagRequest, v1.DeleteTagResponse]
 	availableType      *connect.Client[v1.AvailableTypeRequest, v1.AvailableTypeResponse]
@@ -158,6 +169,11 @@ func (c *baseClient) DeleteAuthenticate(ctx context.Context, req *connect.Reques
 	return c.deleteAuthenticate.CallUnary(ctx, req)
 }
 
+// Generate calls authenticate.v1.Base.Generate.
+func (c *baseClient) Generate(ctx context.Context, req *connect.Request[v1.GenerateRequest]) (*connect.Response[v1.GenerateResponse], error) {
+	return c.generate.CallUnary(ctx, req)
+}
+
 // SetTag calls authenticate.v1.Base.SetTag.
 func (c *baseClient) SetTag(ctx context.Context, req *connect.Request[v1.SetTagRequest]) (*connect.Response[v1.SetTagResponse], error) {
 	return c.setTag.CallUnary(ctx, req)
@@ -179,6 +195,7 @@ type BaseHandler interface {
 	AddAuthenticate(context.Context, *connect.Request[v1.AddAuthenticateRequest]) (*connect.Response[v1.AddAuthenticateResponse], error)
 	SetAuthenticate(context.Context, *connect.Request[v1.SetAuthenticateRequest]) (*connect.Response[v1.SetAuthenticateResponse], error)
 	DeleteAuthenticate(context.Context, *connect.Request[v1.DeleteAuthenticateRequest]) (*connect.Response[v1.DeleteAuthenticateResponse], error)
+	Generate(context.Context, *connect.Request[v1.GenerateRequest]) (*connect.Response[v1.GenerateResponse], error)
 	SetTag(context.Context, *connect.Request[v1.SetTagRequest]) (*connect.Response[v1.SetTagResponse], error)
 	DeleteTag(context.Context, *connect.Request[v1.DeleteTagRequest]) (*connect.Response[v1.DeleteTagResponse], error)
 	AvailableType(context.Context, *connect.Request[v1.AvailableTypeRequest]) (*connect.Response[v1.AvailableTypeResponse], error)
@@ -214,6 +231,12 @@ func NewBaseHandler(svc BaseHandler, opts ...connect.HandlerOption) (string, htt
 		connect.WithSchema(baseDeleteAuthenticateMethodDescriptor),
 		connect.WithHandlerOptions(opts...),
 	)
+	baseGenerateHandler := connect.NewUnaryHandler(
+		BaseGenerateProcedure,
+		svc.Generate,
+		connect.WithSchema(baseGenerateMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
+	)
 	baseSetTagHandler := connect.NewUnaryHandler(
 		BaseSetTagProcedure,
 		svc.SetTag,
@@ -242,6 +265,8 @@ func NewBaseHandler(svc BaseHandler, opts ...connect.HandlerOption) (string, htt
 			baseSetAuthenticateHandler.ServeHTTP(w, r)
 		case BaseDeleteAuthenticateProcedure:
 			baseDeleteAuthenticateHandler.ServeHTTP(w, r)
+		case BaseGenerateProcedure:
+			baseGenerateHandler.ServeHTTP(w, r)
 		case BaseSetTagProcedure:
 			baseSetTagHandler.ServeHTTP(w, r)
 		case BaseDeleteTagProcedure:
@@ -271,6 +296,10 @@ func (UnimplementedBaseHandler) SetAuthenticate(context.Context, *connect.Reques
 
 func (UnimplementedBaseHandler) DeleteAuthenticate(context.Context, *connect.Request[v1.DeleteAuthenticateRequest]) (*connect.Response[v1.DeleteAuthenticateResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("authenticate.v1.Base.DeleteAuthenticate is not implemented"))
+}
+
+func (UnimplementedBaseHandler) Generate(context.Context, *connect.Request[v1.GenerateRequest]) (*connect.Response[v1.GenerateResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("authenticate.v1.Base.Generate is not implemented"))
 }
 
 func (UnimplementedBaseHandler) SetTag(context.Context, *connect.Request[v1.SetTagRequest]) (*connect.Response[v1.SetTagResponse], error) {

@@ -28,6 +28,20 @@ func (x *srv) VerifyConfig(val *authenticate.Authenticate) error {
 	return data.Password().Verify()
 }
 
+func (x *srv) Generate(val *authenticate.Authenticate, req *structpb.Struct) (*structpb.Struct, error) {
+	data, err := ParseData(val)
+	if err != nil {
+		return nil, err
+	}
+
+	pwd := getPassword(req)
+	if pwd == "" {
+		return nil, errors.New("invalid password")
+	}
+
+	return data.Password().GenerateHash(pwd)
+}
+
 func ParseData(val *authenticate.Authenticate) (*AuthenticateData, error) {
 	if val == nil {
 		return nil, errors.New("invalid config")

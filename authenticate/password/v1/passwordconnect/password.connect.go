@@ -35,21 +35,17 @@ const (
 const (
 	// PasswordCheckProcedure is the fully-qualified name of the Password's Check RPC.
 	PasswordCheckProcedure = "/authenticate.password.v1.Password/Check"
-	// PasswordGenerateProcedure is the fully-qualified name of the Password's Generate RPC.
-	PasswordGenerateProcedure = "/authenticate.password.v1.Password/Generate"
 )
 
 // These variables are the protoreflect.Descriptor objects for the RPCs defined in this package.
 var (
-	passwordServiceDescriptor        = v1.File_authenticate_password_v1_password_proto.Services().ByName("Password")
-	passwordCheckMethodDescriptor    = passwordServiceDescriptor.Methods().ByName("Check")
-	passwordGenerateMethodDescriptor = passwordServiceDescriptor.Methods().ByName("Generate")
+	passwordServiceDescriptor     = v1.File_authenticate_password_v1_password_proto.Services().ByName("Password")
+	passwordCheckMethodDescriptor = passwordServiceDescriptor.Methods().ByName("Check")
 )
 
 // PasswordClient is a client for the authenticate.password.v1.Password service.
 type PasswordClient interface {
 	Check(context.Context, *connect.Request[v1.CheckRequest]) (*connect.Response[v1.CheckResponse], error)
-	Generate(context.Context, *connect.Request[v1.GenerateRequest]) (*connect.Response[v1.GenerateResponse], error)
 }
 
 // NewPasswordClient constructs a client for the authenticate.password.v1.Password service. By
@@ -68,19 +64,12 @@ func NewPasswordClient(httpClient connect.HTTPClient, baseURL string, opts ...co
 			connect.WithSchema(passwordCheckMethodDescriptor),
 			connect.WithClientOptions(opts...),
 		),
-		generate: connect.NewClient[v1.GenerateRequest, v1.GenerateResponse](
-			httpClient,
-			baseURL+PasswordGenerateProcedure,
-			connect.WithSchema(passwordGenerateMethodDescriptor),
-			connect.WithClientOptions(opts...),
-		),
 	}
 }
 
 // passwordClient implements PasswordClient.
 type passwordClient struct {
-	check    *connect.Client[v1.CheckRequest, v1.CheckResponse]
-	generate *connect.Client[v1.GenerateRequest, v1.GenerateResponse]
+	check *connect.Client[v1.CheckRequest, v1.CheckResponse]
 }
 
 // Check calls authenticate.password.v1.Password.Check.
@@ -88,15 +77,9 @@ func (c *passwordClient) Check(ctx context.Context, req *connect.Request[v1.Chec
 	return c.check.CallUnary(ctx, req)
 }
 
-// Generate calls authenticate.password.v1.Password.Generate.
-func (c *passwordClient) Generate(ctx context.Context, req *connect.Request[v1.GenerateRequest]) (*connect.Response[v1.GenerateResponse], error) {
-	return c.generate.CallUnary(ctx, req)
-}
-
 // PasswordHandler is an implementation of the authenticate.password.v1.Password service.
 type PasswordHandler interface {
 	Check(context.Context, *connect.Request[v1.CheckRequest]) (*connect.Response[v1.CheckResponse], error)
-	Generate(context.Context, *connect.Request[v1.GenerateRequest]) (*connect.Response[v1.GenerateResponse], error)
 }
 
 // NewPasswordHandler builds an HTTP handler from the service implementation. It returns the path on
@@ -111,18 +94,10 @@ func NewPasswordHandler(svc PasswordHandler, opts ...connect.HandlerOption) (str
 		connect.WithSchema(passwordCheckMethodDescriptor),
 		connect.WithHandlerOptions(opts...),
 	)
-	passwordGenerateHandler := connect.NewUnaryHandler(
-		PasswordGenerateProcedure,
-		svc.Generate,
-		connect.WithSchema(passwordGenerateMethodDescriptor),
-		connect.WithHandlerOptions(opts...),
-	)
 	return "/authenticate.password.v1.Password/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case PasswordCheckProcedure:
 			passwordCheckHandler.ServeHTTP(w, r)
-		case PasswordGenerateProcedure:
-			passwordGenerateHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -134,8 +109,4 @@ type UnimplementedPasswordHandler struct{}
 
 func (UnimplementedPasswordHandler) Check(context.Context, *connect.Request[v1.CheckRequest]) (*connect.Response[v1.CheckResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("authenticate.password.v1.Password.Check is not implemented"))
-}
-
-func (UnimplementedPasswordHandler) Generate(context.Context, *connect.Request[v1.GenerateRequest]) (*connect.Response[v1.GenerateResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("authenticate.password.v1.Password.Generate is not implemented"))
 }

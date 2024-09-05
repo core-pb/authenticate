@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 
 	"connectrpc.com/connect"
 	v1 "github.com/core-pb/authenticate/authenticate/v1"
@@ -63,7 +64,14 @@ func (base) AddAuthenticate(ctx context.Context, req *connect.Request[v1.AddAuth
 		Data:    req.Msg.Data,
 		Info:    req.Msg.Info,
 	}}
-	// TODO: check type data
+
+	tc := typ.Get(val.Type)
+	if tc == nil {
+		return nil, connect.NewError(connect.CodeUnimplemented, errors.New("not support type"))
+	}
+	if err := tc.VerifyConfig(val.Authenticate); err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, err)
+	}
 
 	if _, err := db.NewInsert().Model(val).Returning("*").Exec(ctx); err != nil {
 		return nil, connect.NewError(connect.CodeUnavailable, err)
@@ -190,4 +198,23 @@ func (base) DeleteTag(ctx context.Context, req *connect.Request[v1.DeleteTagRequ
 
 func (base) AvailableType(_ context.Context, _ *connect.Request[v1.AvailableTypeRequest]) (*connect.Response[v1.AvailableTypeResponse], error) {
 	return connect.NewResponse(&v1.AvailableTypeResponse{Type: typ.AvailableType()}), nil
+}
+
+func (base) Generate(ctx context.Context, req *connect.Request[v1.GenerateRequest]) (*connect.Response[v1.GenerateResponse], error) {
+	auth := new(v1.Authenticate)
+	if err := db.NewSelect().Model(&Authenticate{}).Where("id = ?", req.Msg.Id).Scan(ctx, auth); err != nil {
+		return nil, err
+	}
+
+	tc := typ.Get(auth.Type)
+	if tc == nil {
+		return nil, connect.NewError(connect.CodeUnimplemented, errors.New("not support type"))
+	}
+
+	data, err := tc.Generate(auth, req.Msg.Data)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, err)
+	}
+
+	return connect.NewResponse(&v1.GenerateResponse{Data: data}), nil
 }

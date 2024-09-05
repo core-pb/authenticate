@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/core-pb/authenticate/authenticate/v1"
+	"google.golang.org/protobuf/types/known/structpb"
 )
 
 var (
@@ -32,4 +33,5 @@ func AvailableType() []authenticate.Type {
 type TypeConfig interface {
 	VerifyConfig(*authenticate.Authenticate) error
 	Handler() (string, http.Handler)
+	Generate(*authenticate.Authenticate, *structpb.Struct) (*structpb.Struct, error)
 }
