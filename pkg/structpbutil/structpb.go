@@ -2,21 +2,18 @@ package structpbutil
 
 import (
 	"encoding/json"
-	"reflect"
 
 	"google.golang.org/protobuf/types/known/structpb"
 )
 
 func Unmarshal(data *structpb.Struct, v any) error {
-	if data == nil || data.Fields == nil {
-		return nil
+	val, err := json.Marshal(data)
+	if err != nil {
+		return err
 	}
-	return ConvertStruct(data, reflect.ValueOf(v))
+	return json.Unmarshal(val, v)
 }
 
-// Marshal struct to structpb.Struct
-//
-// TODO: use reflect
 func Marshal(v any) (*structpb.Struct, error) {
 	val, err := json.Marshal(v)
 	if err != nil {

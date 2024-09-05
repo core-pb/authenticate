@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	enableType map[authenticate.Type]TypeConfig
+	enableType = make(map[authenticate.Type]TypeConfig)
 )
 
 func Register(typ authenticate.Type, tc TypeConfig) {

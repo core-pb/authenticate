@@ -53,7 +53,7 @@ func (x *Authenticate) BeforeAppendModel(_ context.Context, query bun.Query) err
 
 func (*Authenticate) AfterCreateTable(ctx context.Context, query *bun.CreateTableQuery) error {
 	if _, err := query.DB().NewCreateIndex().IfNotExists().Model((*Authenticate)(nil)).
-		Index("idx_authenticate").Column("type", "scope", "disable", "data").
+		Index("idx_authenticate").Column("type", "disable", "data").
 		Exec(ctx); err != nil {
 		return err
 	}
